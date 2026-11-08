@@ -1,0 +1,55 @@
+@startuml
+!pragma layout smetana
+skinparam defaultFontName "PingFang SC"
+skinparam shadowing false
+skinparam nodesep 30
+skinparam ranksep 45
+skinparam dpi 150
+
+component "酒店预订系统" {
+    component "业务入口" {
+        component "顾客端" as CustomerUI
+        component "酒店工作台" as StaffUI
+        component "平台管理端" as AdminUI
+    }
+    component "服务端权限校验" as Access
+    component "查询与报价" as Search {
+        component "组合查询"
+        component "逐晚报价"
+    }
+    component "订单管理" as Orders {
+        component "预订提交与防重复"
+        component "确认、拒绝与退改"
+        component "入住与退房"
+    }
+    component "酒店与房态管理" as Rooms {
+        component "酒店与房型资料"
+        component "逐日房量、价格、停售"
+        component "房态日历"
+    }
+    component "审核与临时停业" as Review {
+        component "酒店资料审核"
+        component "停业审批与影响清单"
+    }
+    component "业务支撑" as Support {
+        component "订单查询与统计" as Reports
+        component "通知与失败重试" as Notices
+        component "操作日志" as Audit
+    }
+}
+
+CustomerUI --> Access
+StaffUI --> Access
+AdminUI --> Access
+Access --> Search
+Access --> Orders
+Access --> Review
+Access --> Rooms
+Access --> Support
+Search --> Rooms : 读取可订房态
+Orders --> Rooms : 校验、占用与释放
+Review --> Rooms : 审核与停业
+Review --> Reports : 查询受影响订单
+Orders --> Notices : 超时取消后通知
+Orders ..> Audit : 记录操作
+@enduml

@@ -1,0 +1,45 @@
+@startuml
+skinparam defaultFontName "PingFang SC"
+skinparam shadowing false
+skinparam dpi 150
+
+actor 顾客 as Customer
+participant 顾客端 as App
+participant 订单服务 as Booking
+participant 房态服务 as Inventory
+participant 数据存储 as Storage
+
+Customer -> App : 确认逐晚报价并提交
+App -> Booking : 提交请求（编号、房型、日期、人数、报价）
+Booking -> Storage : 在事务内锁定请求键并查询原结果
+Storage --> Booking : 原结果或首次处理
+
+alt 已有结果
+    Booking -> Storage : 结束事务
+    Booking --> App : 返回原结果，成功时返回同一订单
+else 首次处理
+    Booking -> Storage : 串行检查同顾客同酒店同房型的重叠订单
+    Storage --> Booking : 重叠检查结果
+    Booking -> Inventory : 校验酒店及房型，读取最新逐晚报价与房量
+    Inventory -> Storage : 锁定并读取各住宿日房态
+    Storage --> Inventory : 返回房态与售价
+    Inventory --> Booking : 返回校验结果与新报价
+    alt 任一晚不可订或存在重叠订单
+        Booking -> Storage : 保存拒绝结果并结束事务
+        Booking --> App : 提示失败，不生成订单或占用房晚
+    else 价格有变化
+        Booking -> Storage : 保存需确认结果并结束事务
+        Booking --> App : 展示新报价，请顾客重新确认
+    else 可订且报价一致
+        Booking -> Storage : 创建待确认订单，写入价格快照及全部房晚占用
+        alt 写入全部成功
+            Booking -> Storage : 保存成功结果并提交事务
+            Booking --> App : 返回订单编号与待确认状态
+        else 写入失败
+            Booking -> Storage : 回滚订单和全部房晚变更
+            Booking --> App : 提示失败，可用原编号重试
+        end
+    end
+end
+App --> Customer : 显示处理结果
+@enduml

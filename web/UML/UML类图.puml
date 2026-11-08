@@ -1,0 +1,106 @@
+@startuml
+!pragma layout smetana
+skinparam defaultFontSize 15
+skinparam shadowing false
+skinparam nodesep 30
+skinparam ranksep 44
+skinparam dpi 150
+
+class User {
+    - id: long
+    - role: Role
+    + canAccess(order: Booking): boolean
+}
+
+class Hotel {
+    - id: long
+    - name: string
+    - city: string
+    - address: string
+    - contactInfo: string
+    - approved: boolean
+    + isOpen(date: Date): boolean
+}
+
+class RoomType {
+    - id: long
+    - name: string
+    - bedType: string
+    - description: string
+    - capacity: int
+    - active: boolean
+    + fits(guestCount: int): boolean
+}
+
+class DailyInventory {
+    - stayDate: Date
+    - totalRooms: int
+    - occupiedRooms: int
+    - price: Decimal
+    - salesClosed: boolean
+    + availableRooms(): int
+}
+
+class BookingService {
+    + submit(request: BookingRequest): BookingResult
+    + findResult(requestId: string): BookingResult
+    + applyChange(bookingId: long, change: ChangeRequest): void
+}
+
+class Booking {
+    - id: long
+    - checkInDate: Date
+    - checkOutDate: Date
+    - guestCount: int
+    - contactName: string
+    - contactPhone: string
+    - status: BookingStatus
+    - totalPrice: Decimal
+    - policySnapshot: string
+    + confirm(): void
+    + cancel(reason: string): void
+    + checkIn(): void
+    + checkOut(): void
+}
+
+class BookingNight {
+    - stayDate: Date
+    - bookedPrice: Decimal
+    - allocationStatus: AllocationStatus
+}
+
+class ChangeRequest {
+    - newCheckIn: Date
+    - newCheckOut: Date
+    - newRoomTypeId: long
+    - newGuestCount: int
+    - newContact: string
+    - status: ChangeStatus
+    + invalidate(): void
+}
+
+class StayRecord {
+    - action: StayAction
+    - occurredAt: DateTime
+    - staffId: long
+}
+
+class ClosureRequest {
+    - startDate: Date
+    - endDate: Date
+    - status: ReviewStatus
+    + covers(date: Date): boolean
+}
+
+User "0..*" -right- "0..1" Hotel : works at >
+Hotel "1" -- "0..*" ClosureRequest : submits >
+Hotel "1" -- "0..*" RoomType : offers >
+RoomType "1" -- "0..*" DailyInventory : tracks >
+User "1" -- "0..*" Booking : places >
+RoomType "1" -- "0..*" Booking : selected by >
+BookingService ..> Booking : manages >
+Booking "1" *-- "1..*" BookingNight : contains >
+BookingNight "0..*" --> "1" DailyInventory : draws from >
+Booking "1" -- "0..*" ChangeRequest : receives >
+Booking "1" -- "0..2" StayRecord : records >
+@enduml

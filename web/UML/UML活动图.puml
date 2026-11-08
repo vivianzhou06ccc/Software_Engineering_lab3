@@ -1,0 +1,39 @@
+@startuml
+skinparam defaultFontName "PingFang SC"
+skinparam shadowing false
+skinparam dpi 150
+
+start
+:顾客按日期、人数等条件查询酒店;
+:选择房型，确认逐晚报价与退改规则;
+:提交预订;
+:系统重新检查报价及每晚可订条件;
+
+if (有不可订房晚或重叠订单？) then (是)
+    :提示失败原因，保留原库存;
+    stop
+endif
+
+if (提交时价格有变化？) then (是)
+    :展示新报价，等待顾客重新确认后另行提交;
+    stop
+else (否)
+    :同时创建待确认订单并占用全部房晚;
+endif
+
+:等待酒店确认或待确认订单取消;
+if (订单处理结果？) then (确认)
+    :订单转为已确认，沿用原库存占用;
+else (拒绝或取消生效)
+    :记录原因，转为已取消并释放占用;
+    stop
+endif
+
+if (入住前取消已按政策生效？) then (是)
+    :订单转为已取消，只释放仍占用的房晚一次;
+else (否)
+    :酒店办理入住，记录时间与经办人;
+    :酒店办理正常退房，保留已消费房晚记录;
+endif
+stop
+@enduml
