@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>PreferenceSpecifiers</key>
+  <array>
+    <dict>
+      <key>Type</key><string>PSGroupSpecifier</string>
+      <key>Title</key><string>课程演示</string>
+      <key>FooterText</key><string>重新打开 App 后生效。演示政策使用独立数据库。</string>
+    </dict>
+    <dict>
+      <key>Type</key><string>PSToggleSwitchSpecifier</string>
+      <key>Title</key><string>启用演示政策</string>
+      <key>Key</key><string>StayDemoPolicies</string>
+      <key>DefaultValue</key><false/>
+    </dict>
+  </array>
+</dict>
+</plist>
